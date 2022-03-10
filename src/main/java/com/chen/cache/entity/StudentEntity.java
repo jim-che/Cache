@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * 
@@ -17,6 +18,7 @@ import lombok.Data;
  */
 @Data
 @TableName("student")
+@ToString
 public class StudentEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 

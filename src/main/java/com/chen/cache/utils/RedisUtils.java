@@ -18,11 +18,11 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @SuppressWarnings("all")
-public class RedisUtils {
+public class RedisUtils<T> {
 
     @Resource
     @Qualifier("redisTemplate")
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, T> redisTemplate;
 
 
     public static List<Integer> generateFirstAndLast(int currentPage, int total, int pageSize){
@@ -104,8 +104,8 @@ public class RedisUtils {
      * @param key key
      * @return value
      */
-    public Object get(String key) {
-        return key == null ? null : redisTemplate.opsForValue().get(key);
+    public T get(String key) {
+        return key == null ? null : (T) redisTemplate.opsForValue().get(key);
     }
 
     /**
@@ -115,7 +115,7 @@ public class RedisUtils {
      * @param value value
      * @return is success or not
      */
-    public boolean set(String key, Object value) {
+    public boolean set(String key, T value) {
         try {
             redisTemplate.opsForValue().set(key, value);
             return true;
@@ -133,7 +133,7 @@ public class RedisUtils {
      * @param time  expire time
      * @return success or not
      */
-    public boolean set(String key, Object value, long time) {
+    public boolean set(String key, T value, long time) {
         try {
             if (time > 0) {
                 redisTemplate.opsForValue().set(key, value, time, TimeUnit.SECONDS);
@@ -313,7 +313,7 @@ public class RedisUtils {
      * @param key key
      * @return value
      */
-    public Set<Object> setGet(String key) {
+    public Set<T> setGet(String key) {
         try {
             return redisTemplate.opsForSet().members(key);
         } catch (Exception e) {
@@ -346,7 +346,7 @@ public class RedisUtils {
      * @return length of information
      */
     @SuppressWarnings("all")
-    public long setSet(String key, Object... values) {
+    public long setSet(String key, T... values) {
         try {
             return redisTemplate.opsForSet().add(key, values);
         } catch (Exception e) {
@@ -357,7 +357,7 @@ public class RedisUtils {
 
 
     @SuppressWarnings("all")
-    public long setSetAndTime(String key, long time, Object... values) {
+    public long setSetAndTime(String key, long time, T... values) {
         try {
             Long count = redisTemplate.opsForSet().add(key, values);
             if (time > 0) {
@@ -381,7 +381,7 @@ public class RedisUtils {
      * @param score
      * @return
      */
-    public Boolean zAdd(String key, Object value, double score) {
+    public Boolean zAdd(String key, T value, double score) {
         return redisTemplate.opsForZSet().add(key, value, score);
     }
 
@@ -390,7 +390,7 @@ public class RedisUtils {
      * @param values
      * @return
      */
-    public Long zAdd(String key, Set<ZSetOperations.TypedTuple<Object>> values) {
+    public Long zAdd(String key, Set<ZSetOperations.TypedTuple<T>> values) {
         return redisTemplate.opsForZSet().add(key, values);
     }
 
@@ -411,7 +411,7 @@ public class RedisUtils {
      * @param delta
      * @return
      */
-    public Double zIncrementScore(String key, String value, double delta) {
+    public Double zIncrementScore(String key, T value, double delta) {
         return redisTemplate.opsForZSet().incrementScore(key, value, delta);
     }
 
@@ -445,8 +445,8 @@ public class RedisUtils {
      * @param end   结束位置, -1查询所有
      * @return
      */
-    public Set<Object> zRange(String key, long start, long end) {
-        return redisTemplate.opsForZSet().range(key, start, end);
+    public Set<T> zRange(T key, long start, long end) {
+        return redisTemplate.opsForZSet().range((String) key, start, end);
     }
 
     /**
@@ -457,7 +457,7 @@ public class RedisUtils {
      * @param end
      * @return
      */
-    public Set<ZSetOperations.TypedTuple<Object>> zRangeWithScores(String key, long start,
+    public Set<ZSetOperations.TypedTuple<T>> zRangeWithScores(String key, long start,
                                                                    long end) {
         return redisTemplate.opsForZSet().rangeWithScores(key, start, end);
     }
@@ -470,7 +470,7 @@ public class RedisUtils {
      * @param max 最大值
      * @return
      */
-    public Set<Object> zRangeByScore(String key, double min, double max) {
+    public Set<T> zRangeByScore(String key, double min, double max) {
         return redisTemplate.opsForZSet().rangeByScore(key, min, max);
     }
 
@@ -482,7 +482,7 @@ public class RedisUtils {
      * @param max 最大值
      * @return
      */
-    public Set<ZSetOperations.TypedTuple<Object>> zRangeByScoreWithScores(String key,
+    public Set<ZSetOperations.TypedTuple<T>> zRangeByScoreWithScores(String key,
                                                                           double min, double max) {
         return redisTemplate.opsForZSet().rangeByScoreWithScores(key, min, max);
     }
@@ -495,7 +495,7 @@ public class RedisUtils {
      * @param end
      * @return
      */
-    public Set<ZSetOperations.TypedTuple<Object>> zRangeByScoreWithScores(String key,
+    public Set<ZSetOperations.TypedTuple<T>> zRangeByScoreWithScores(String key,
                                                                           double min, double max, long start, long end) {
         return redisTemplate.opsForZSet().rangeByScoreWithScores(key, min, max,
                 start, end);
@@ -509,7 +509,7 @@ public class RedisUtils {
      * @param end
      * @return
      */
-    public Set<Object> zReverseRange(String key, long start, long end) {
+    public Set<T> zReverseRange(String key, long start, long end) {
         return redisTemplate.opsForZSet().reverseRange(key, start, end);
     }
 
@@ -521,7 +521,7 @@ public class RedisUtils {
      * @param end
      * @return
      */
-    public Set<ZSetOperations.TypedTuple<Object>> zReverseRangeWithScores(String key,
+    public Set<ZSetOperations.TypedTuple<T>> zReverseRangeWithScores(String key,
                                                                           long start, long end) {
         return redisTemplate.opsForZSet().reverseRangeWithScores(key, start,
                 end);
@@ -535,7 +535,7 @@ public class RedisUtils {
      * @param max
      * @return
      */
-    public Set<Object> zReverseRangeByScore(String key, double min,
+    public Set<T> zReverseRangeByScore(String key, double min,
                                             double max) {
         return redisTemplate.opsForZSet().reverseRangeByScore(key, min, max);
     }
@@ -548,7 +548,7 @@ public class RedisUtils {
      * @param max
      * @return
      */
-    public Set<ZSetOperations.TypedTuple<Object>> zReverseRangeByScoreWithScores(
+    public Set<ZSetOperations.TypedTuple<T>> zReverseRangeByScoreWithScores(
             String key, double min, double max) {
         return redisTemplate.opsForZSet().reverseRangeByScoreWithScores(key,
                 min, max);
@@ -562,7 +562,7 @@ public class RedisUtils {
      * @param end
      * @return
      */
-    public Set<Object> zReverseRangeByScore(String key, double min,
+    public Set<T> zReverseRangeByScore(String key, double min,
                                             double max, long start, long end) {
         return redisTemplate.opsForZSet().reverseRangeByScore(key, min, max,
                 start, end);
@@ -692,7 +692,7 @@ public class RedisUtils {
      * @param options
      * @return
      */
-    public Cursor<ZSetOperations.TypedTuple<Object>> zScan(String key, ScanOptions options) {
+    public Cursor<ZSetOperations.TypedTuple<T>> zScan(String key, ScanOptions options) {
         return redisTemplate.opsForZSet().scan(key, options);
     }
 
@@ -717,8 +717,8 @@ public class RedisUtils {
      * @param end   结束位置, -1返回所有
      * @return
      */
-    public List<Object> lRange(String key, long start, long end) {
-        return redisTemplate.opsForList().range(key, start, end);
+    public List<T> lRange(String key, long start, long end) {
+        return (List<T>) redisTemplate.opsForList().range(key, start, end);
     }
 
     /**
@@ -728,7 +728,7 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lLeftPush(String key, Object value) {
+    public Long lLeftPush(String key, T value) {
         return redisTemplate.opsForList().leftPush(key, value);
     }
 
@@ -737,7 +737,7 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lLeftPushAll(String key, Object... value) {
+    public Long lLeftPushAll(String key, T... value) {
         return redisTemplate.opsForList().leftPushAll(key, value);
     }
 
@@ -746,7 +746,16 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lLeftPushAll(String key, Collection<String> value) {
+    public long lLeftPushList(String key, List<T> value){
+        return redisTemplate.opsForList().leftPushAll(key, (List)value);
+    }
+
+    /**
+     * @param key
+     * @param value
+     * @return
+     */
+    public Long lLeftPushAll(String key, Collection<T> value) {
         return redisTemplate.opsForList().leftPushAll(key, value);
     }
 
@@ -757,7 +766,7 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lLeftPushIfPresent(String key, String value) {
+    public Long lLeftPushIfPresent(String key, T value) {
         return redisTemplate.opsForList().leftPushIfPresent(key, value);
     }
 
@@ -769,7 +778,7 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lLeftPush(String key, String pivot, String value) {
+    public Long lLeftPush(String key, T pivot, T value) {
         return redisTemplate.opsForList().leftPush(key, pivot, value);
     }
 
@@ -778,7 +787,7 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lRightPush(String key, String value) {
+    public Long lRightPush(String key, T value) {
         return redisTemplate.opsForList().rightPush(key, value);
     }
 
@@ -787,7 +796,7 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lRightPushAll(String key, String... value) {
+    public Long lRightPushAll(String key, T... value) {
         return redisTemplate.opsForList().rightPushAll(key, value);
     }
 
@@ -796,7 +805,7 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lRightPushAll(String key, Collection<String> value) {
+    public Long lRightPushAll(String key, Collection<T> value) {
         return redisTemplate.opsForList().rightPushAll(key, value);
     }
 
@@ -807,7 +816,7 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lRightPushIfPresent(String key, String value) {
+    public Long lRightPushIfPresent(String key, T value) {
         return redisTemplate.opsForList().rightPushIfPresent(key, value);
     }
 
@@ -819,7 +828,7 @@ public class RedisUtils {
      * @param value
      * @return
      */
-    public Long lRightPush(String key, String pivot, String value) {
+    public Long lRightPush(String key, T pivot, T value) {
         return redisTemplate.opsForList().rightPush(key, pivot, value);
     }
 
@@ -830,7 +839,7 @@ public class RedisUtils {
      * @param index 位置
      * @param value
      */
-    public void lSet(String key, long index, String value) {
+    public void lSet(String key, long index, T value) {
         redisTemplate.opsForList().set(key, index, value);
     }
 
