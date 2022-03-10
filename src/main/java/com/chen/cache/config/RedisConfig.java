@@ -32,11 +32,6 @@ public class RedisConfig {
                         .disableCachingNullValues()
                         .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer(Object.class)));
         return RedisCacheManager.builder(connectionFactory).cacheDefaults(cacheConfiguration).build();
-
-//            RedisCacheManager rcm=RedisCacheManager.create(connectionFactory);
-//
-//            return rcm;
-
     }
 
     @Bean(name="redisTemplate")

@@ -16,19 +16,19 @@ public class Result<T> {
     String msg;
     int code;
 
-    public Result<T> success(T data, String msg, int code) {
+    public static<T> Result<T> success(T data, String msg, int code) {
         return new Result<>(data, msg, code);
     }
 
-    public Result<T> success(T data){
+    public static<T> Result<T> success(T data){
         return success(data, "success", 200);
     }
 
-    public Result<T> failed(T data, String msg, int code){
+    public static<T> Result<T> failed(T data, String msg, int code){
         return new Result<>(data, msg, code);
     }
 
-    public Result<T> failed(String msg){
+    public static<T> Result<T> failed(String msg){
         return failed(null, msg, 400);
     }
 
