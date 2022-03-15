@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
@@ -19,6 +20,7 @@ import lombok.ToString;
 @Data
 @TableName("student")
 @ToString
+@EqualsAndHashCode
 public class StudentEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
