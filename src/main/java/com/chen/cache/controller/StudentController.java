@@ -2,20 +2,24 @@ package com.chen.cache.controller;
 
 import com.chen.cache.config.datasource.DataSource;
 import com.chen.cache.config.datasource.SourceName;
+import com.chen.cache.config.mq.KafkaSender;
 import com.chen.cache.dto.lang.EntityName;
 import com.chen.cache.dto.lang.FullList;
 import com.chen.cache.dto.lang.Result;
 import com.chen.cache.entity.StudentEntity;
 import com.chen.cache.service.StudentService;
 import com.chen.cache.utils.RedisUtils;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.transaction.annotation.Transactional;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author chenguo
@@ -29,11 +33,20 @@ public class StudentController {
     @Resource
     private RedisUtils<StudentEntity> redisUtils;
 
+    @Resource
+    KafkaSender kafkaSender;
+
+    @Resource
+    KafkaTemplate<String, Object> kafkaTemplate;
+
+    Random random = new Random();
 
     @DataSource(SourceName.read)
     @GetMapping("/list")
+    @KafkaListener(topics = "studentList")
     public Result<List<StudentEntity>> getStudentList() {
-        List<StudentEntity> studentList = new ArrayList<>();
+        System.out.println("Listening to studentList");
+        List<StudentEntity> studentList;
         if (redisUtils.hasKey(FullList.studentList.getValue())) {
             studentList = redisUtils.lRange(FullList.studentList.getValue(), 0, -1);
         }else {
@@ -41,23 +54,25 @@ public class StudentController {
                 studentList = studentService.list();
                 System.out.println(studentList.getClass());
                 redisUtils.lLeftPushAll(FullList.studentList.getValue(), studentList);
-                redisUtils.expire(FullList.studentList.getValue(), 60);
+                int expire = random.nextInt(30) + 60;
+                redisUtils.expire(FullList.studentList.getValue(), expire);
             }
         }
         return Result.success(studentList);
     }
 
     @DataSource(SourceName.read)
-    @GetMapping("/get")
-    public Result<StudentEntity> getStudentById(@RequestParam("id") int id){
-        StudentEntity student = new StudentEntity();
+    @GetMapping("/get/{id}")
+    public Result<StudentEntity> getStudentById(@PathVariable("id") int id){
+        StudentEntity student;
         if(redisUtils.hasKey(EntityName.student.getValue() + id)){
             student = redisUtils.get(EntityName.student.getValue() + id);
         }else{
             synchronized (this){
                 student = studentService.getById(id);
                 redisUtils.set(EntityName.student.getValue() + id, student);
-                redisUtils.expire(EntityName.student.getValue() + id, 120);
+                int expire = random.nextInt(60) + 60;
+                redisUtils.expire(EntityName.student.getValue() + id, expire);
             }
         }
         if(Objects.equals(student, new StudentEntity()) || student == null){
@@ -69,11 +84,12 @@ public class StudentController {
 
     @DataSource(SourceName.write)
     @PostMapping("/update")
-    public Result<StudentEntity> updateById(StudentEntity studentEntity) {
-        boolean flag = false;
+    public Result<StudentEntity> updateById(@RequestBody StudentEntity studentEntity) {
+        System.out.println(studentEntity);
+        boolean flag;
         synchronized (this){
             flag = studentService.updateById(studentEntity);
-            redisUtils.del("student:" + studentEntity.getSno());
+            redisUtils.del("student" + studentEntity.getSno());
         }
         if(flag){
             return Result.success(studentEntity);
@@ -88,7 +104,7 @@ public class StudentController {
         if(redisUtils.hasKey(EntityName.student.getValue() + studentEntity.getSno())){
             return Result.failed("学号已存在");
         }
-        boolean flag = false;
+        boolean flag;
         synchronized (this){
             flag = studentService.save(studentEntity);
             redisUtils.set(EntityName.student.getValue() + studentEntity.getSno(), studentEntity);
@@ -104,7 +120,7 @@ public class StudentController {
     @DataSource(SourceName.write)
     @GetMapping("/del")
     public Result<String> deleteById(int id) {
-        boolean flag = false;
+        boolean flag;
         synchronized (this){
             flag = studentService.removeById(id);
             redisUtils.del(EntityName.student.getValue() + id);
