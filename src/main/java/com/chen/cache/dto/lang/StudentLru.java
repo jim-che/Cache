@@ -25,20 +25,10 @@ public class StudentLru extends LinkedHashMap<Integer, StudentEntity> {
     }
 
     public StudentEntity get(int id){
-        System.out.println("get******************");
-        for (Map.Entry<Integer, StudentEntity> integerStudentEntityEntry : super.entrySet()) {
-            System.out.println(integerStudentEntityEntry.getKey() + ":" + integerStudentEntityEntry.getValue());
-        }
-        System.out.println("get******************");
         return super.getOrDefault(id, null);
     }
 
     public void put(int id) {
-        System.out.println("put******************");
-        for (Map.Entry<Integer, StudentEntity> integerStudentEntityEntry : super.entrySet()) {
-            System.out.println(integerStudentEntityEntry.getKey() + ":" + integerStudentEntityEntry.getValue());
-        }
-        System.out.println("put******************");
         StudentEntity studentEntity = redisUtils.get(EntityName.student.getValue() + id);
         if (studentEntity == null) {
             studentEntity = studentService.getById(id);

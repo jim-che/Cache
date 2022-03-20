@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 
@@ -15,13 +16,13 @@ import lombok.Data;
  * @email 2101185637@qq.com
  * @date 2022-03-09 19:39:12
  */
+@EqualsAndHashCode
 @Data
 @TableName("course")
-public class CourseEntity implements Serializable {
-	private static final long serialVersionUID = 1L;
+public class CourseEntity implements Serializable  {
 
+	private static final long serialVersionUID = 1L;
 	/**
-	 * 
 	 */
 	@TableId
 	private Integer cno;

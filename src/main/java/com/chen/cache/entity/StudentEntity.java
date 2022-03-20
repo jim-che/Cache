@@ -20,7 +20,7 @@ import lombok.ToString;
 @Data
 @TableName("student")
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 public class StudentEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,5 +48,4 @@ public class StudentEntity implements Serializable {
 
 	@TableLogic
 	private int isDeleted;
-
 }

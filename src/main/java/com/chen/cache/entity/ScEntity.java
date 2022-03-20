@@ -19,7 +19,6 @@ import lombok.Data;
 @TableName("sc")
 public class ScEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
-
 	/**
 	 * 
 	 */

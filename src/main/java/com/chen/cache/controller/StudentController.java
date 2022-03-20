@@ -1,5 +1,6 @@
 package com.chen.cache.controller;
 
+import com.chen.cache.config.bloom.Bloom;
 import com.chen.cache.config.datasource.DataSource;
 import com.chen.cache.config.datasource.SourceName;
 import com.chen.cache.config.mq.KafkaSender;
@@ -13,9 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 /**
  * @author chenguo
@@ -74,16 +73,14 @@ public class StudentController {
 
     @DataSource(SourceName.read)
     @GetMapping("/get/{id}")
+    @Bloom(method = "get", bean = "studentService")
     public Result<StudentEntity> getStudentById(@PathVariable("id") int id){
-        if(!filter.contains(EntityName.student.getValue()+id)){
-            return Result.failed("该学生并不存在");
-        }
+//        if(!filter.contains(EntityName.student.getValue()+id)){
+//            return Result.failed("该学生并不存在");
+//        }
         StudentEntity student;
         if(studentLru.containsKey(id)){
             studentLru.put(id);
-            System.out.println("===========================");
-            System.out.println("LRU命中");
-            System.out.println("===========================");
             return Result.success(studentLru.get(id));
         }
         if(redisUtils.hasKey(EntityName.student.getValue() + id)){
@@ -122,17 +119,18 @@ public class StudentController {
 
     @DataSource(SourceName.write)
     @PostMapping("/add")
+    @Bloom(method = "add", bean = "studentService")
     public Result<StudentEntity> add(StudentEntity studentEntity) {
-        if(filter.contains(EntityName.student.getValue() + studentEntity.getSno()) || redisUtils.hasKey(EntityName.student.getValue() + studentEntity.getSno())){
-            return Result.failed("学号已存在");
-        }
+//        if(filter.contains(EntityName.student.getValue() + studentEntity.getSno()) || redisUtils.hasKey(EntityName.student.getValue() + studentEntity.getSno())){
+//            return Result.failed("学号已存在");
+//        }
         boolean flag;
         synchronized (this){
             flag = studentService.save(studentEntity);
             redisUtils.set(EntityName.student.getValue() + studentEntity.getSno(), studentEntity);
             int expire = random.nextInt(60) + 60;
             redisUtils.expire(EntityName.student.getValue() + studentEntity.getSno(), expire);
-            filter.add(EntityName.student.getValue() + studentEntity.getSno());
+//            filter.add(EntityName.student.getValue() + studentEntity.getSno());
             studentLru.put(studentEntity.getSno());
         }
         if(flag){
@@ -144,8 +142,9 @@ public class StudentController {
 
     @DataSource(SourceName.write)
     @GetMapping("/del")
+    @Bloom(method = "delete", bean = "studentService")
     public Result<String> deleteById(int id) {
-        filter.remove(EntityName.student.getValue() + id);
+//        filter.remove(EntityName.student.getValue() + id);
         boolean flag;
         synchronized (this){
             flag = studentService.removeById(id);
